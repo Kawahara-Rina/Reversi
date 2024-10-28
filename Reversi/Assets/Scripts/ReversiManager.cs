@@ -15,12 +15,12 @@ public class ReversiManager : MonoBehaviour
     //[SerializeField] private float radius; // コマの半径
 
     // デバッグ用
-    [SerializeField]private GameObject none;
-    [SerializeField]private GameObject black;
-    [SerializeField]private GameObject white;
-    [SerializeField]private GameObject parent;
-    [SerializeField]private GameObject select;
-    [SerializeField] private Text turnText;
+    [SerializeField]private GameObject black;  // 表示するコマ「黒」
+    [SerializeField]private GameObject white;  // 表示するコマ「白」
+    [SerializeField]private GameObject parent; // コマを生成する領域
+    [SerializeField]private GameObject select; // 選択中のマス
+    [SerializeField] private Text turnText;    // ターンを表示するテキスト
+    [SerializeField] private Text scoreText;   // 各色のコマ数を表示するテキスト
 
     // オセロの盤面を定義
     // オセロの盤面は8x8
@@ -42,6 +42,8 @@ public class ReversiManager : MonoBehaviour
 
     // 黒・白のターン
     private int turn;
+    // 黒・白のコマ数
+    private int scoreBk,scoreWh;
 
     // 初期化処理
     private void Init()
@@ -55,6 +57,9 @@ public class ReversiManager : MonoBehaviour
 
         // ターン初期化
         turn = BLACK;
+        // スコア初期化
+        scoreBk = 2;
+        scoreWh = 2;
     }
 
     // テキストを表示する処理
@@ -72,42 +77,55 @@ public class ReversiManager : MonoBehaviour
         }
         // ターンを表示
         turnText.text = "ターン：" + player;
+
+        // スコアの描画
+        scoreText.text = "黒：" + scoreBk + "\n白：" + scoreWh;
     }
 
     // 駒を描画する処理
     private void DrawPiece()
     {
+        // スコアのリセット
+        scoreBk = 0;
+        scoreWh = 0;
+
         // オセロのマス分ループし、描画
         for (int i = NONE; i < MAX_SQUARE; i++)
         {
             for (int j = NONE; j < MAX_SQUARE; j++)
             {
-                var obj = none;
+                GameObject obj = null;
 
                 // 色別に画像変える
                 switch (board[i, j])
                 {
                     case NONE:
-                        obj = none;
+                        obj = null;
                         break;
 
                     case BLACK:
                         obj = black;
+                        // スコアを加算
+                        scoreBk++;
                         break;
 
                     case WHITE:
                         obj = white;
+                        // スコアを加算
+                        scoreWh++;
                         break;
                 }
 
                 // 何もないところ以外は描画
-                if (obj != none)
+                if (obj != null)
                 {
                     // コマ生成
                     var piece = Instantiate(obj);
                     piece.transform.SetParent(parent.transform, false);
 
                     piece.transform.position = new Vector2(i, -j);
+
+
                     //Debug.Log("["+i+","+j+"]   " +board[i, j]);
 
                 }
