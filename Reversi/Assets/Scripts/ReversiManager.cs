@@ -171,30 +171,87 @@ public class ReversiManager : MonoBehaviour
         // スペースキー押下でコマを置く
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            // 選択中のマスにコマを置く
-            // TODO そのマスに置けるかどうかの判定
-            if (turn == BLACK)
+            // そのマスに置けるかどうかの判定
+            // 上方向の探索のみ
+            if (SelectCheck(selectPosX, selectPosY))
             {
-                board[selectPosX, selectPosY] = BLACK;
+                // 選択中のマスにコマを置く
+                if (turn == BLACK)
+                {
+                    board[selectPosX, selectPosY] = BLACK;
+                }
+                else
+                {
+                    board[selectPosX, selectPosY] = WHITE;
+
+                }
+
+                // コマを消去
+                for (int i = NONE; i < parent.transform.childCount; i++)
+                {
+                    Destroy(parent.transform.GetChild(i).gameObject);
+                }
+
+                // コマを再描画
+                DrawPiece();
+
+                // ターンを変更
+                turn *= -1;
             }
-            else
-            {
-                board[selectPosX, selectPosY] = WHITE;
-
-            }
-
-            // コマを消去
-            for (int i = NONE; i < parent.transform.childCount; i++)
-            {
-                Destroy(parent.transform.GetChild(i).gameObject);
-            }
-
-            // コマを再描画
-            DrawPiece();
-
-            // ターンを変更
-            turn *= -1;
         }
+    }
+
+    /// <summary>
+    // 上方向にコマが置けるかどうかの判定処理
+    /// </summary>
+    /// <param name="_posX">コマを置く位置のx成分</param>
+    /// <param name="_posY">コマを置く位置のy成分</param>
+    /// <returns></returns>
+    private bool SelectCheck(int _posX,int _posY)
+    {
+        // 自分の色
+        var myCol = turn;
+        // 相手の色
+        var enCol = turn * -1;
+
+        // 上方向の探索
+        // 検索範囲の除外
+        // 石を置いたときに挟むことが出来ない上2マスの場所
+        if (_posY >= 2)
+        {
+            // 1.石を置こうとするマスに石が置かれていないこと
+            if (board[_posX, _posY] == NONE)
+            {
+                // 2.石を置こうとするマスの1マス隣(上)に自分と異なる色の石があること
+                if (board[_posX, _posY - 1] == enCol)
+                {
+                    // 2の延長線上に置かれている自分と同じ色のコマの最短の位置
+                    var myColPos = 0;
+
+                    // 3.2の延長線上に自分と同じ色の石が置かれていること
+                    for (int i = _posY; i > 0; i--)
+                    {
+                        // 自分と同じ色のコマを見つけた場合
+                        if (board[_posX, i] == myCol)
+                        {
+                            // 位置を格納し、ループから抜ける
+                            myColPos = i;
+                            break;
+                        }
+                    }
+
+                    // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                    for (int i = _posY; i > myColPos; i--)
+                    {
+                        board[_posX, i] = myCol;
+                    }
+                    return true;
+                }
+            }
+        }
+
+        // 上の条件を満たさない場合はfalseを返す(コマを置けない)
+        return false;
     }
 
     // Start is called before the first frame update
