@@ -6,10 +6,13 @@ using UnityEngine.UI;
 public class ReversiManager : MonoBehaviour
 {
     // 定数定義
-    private const int MAX_SQUARE = 8;  // 盤面のマス数
-    private const int NONE = 0;        // マスの状態　空 
-    private const int BLACK = 1;       // マスの状態　黒のコマ
-    private const int WHITE = -1;      // マスの状態　白のコマ
+    private const int MAX_SQUARE = 8;          // 盤面のマス数
+    private const int NONE = 0;                // マスの状態　空 
+    private const int BLACK = 1;               // マスの状態　黒のコマ
+    private const int WHITE = -1;              // マスの状態　白のコマ
+    private const float CELL_SIZE = 1.0f;      // 1コマの大きさ
+
+    public Material lineMaterial; // 線描画用のマテリアルをアタッチ
 
     // 変数定義
     //[SerializeField] private float radius; // コマの半径
@@ -37,6 +40,9 @@ public class ReversiManager : MonoBehaviour
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
     };
 
+    // LineRenderer取得用
+    //LineRenderer renderer;
+
     // カーソルの位置
     private int selectPosX,selectPosY;
 
@@ -60,27 +66,94 @@ public class ReversiManager : MonoBehaviour
         // スコア初期化
         scoreBk = 2;
         scoreWh = 2;
+
+        // 背景描画
+
+        OnRenderObject();
+
+
     }
 
+    private void OnRenderObject()
+    {
+        if (lineMaterial == null)
+        {
+            Debug.LogWarning("Line Material is not assigned.");
+            return;
+        }
+
+        // 描画の基準点を中央に調整
+        float offset = -CELL_SIZE / 2;
+
+        //DrawGreenBackground(offset);
+        DrawLines(offset);
+    }
+
+    // 緑の四角形を描画するメソッド
+    private void DrawGreenBackground(float offset)
+    {
+        lineMaterial.SetPass(0);
+        GL.Begin(GL.QUADS);
+        GL.Color(Color.green);
+
+        GL.Vertex3(offset, offset, 0);
+        GL.Vertex3(offset + MAX_SQUARE * CELL_SIZE, offset, 0);
+        GL.Vertex3(offset + MAX_SQUARE * CELL_SIZE, offset - MAX_SQUARE * CELL_SIZE, 0);
+        GL.Vertex3(offset, offset - MAX_SQUARE * CELL_SIZE, 0);
+
+        GL.End();
+    }
+
+
+    // 枠線を描画する処理
+    private void DrawLines(float offset)
+    {
+        
+
+        // マテリアルのセット
+        lineMaterial.SetPass(0);
+        GL.Begin(GL.LINES);
+        GL.Color(Color.black);
+
+        
+        // 縦線を描画
+        for (int i = 0; i <= MAX_SQUARE; i++)
+        {
+            float x = offset + i * CELL_SIZE;
+            GL.Vertex3(x,-offset, 0);
+            GL.Vertex3(x, -offset - MAX_SQUARE * CELL_SIZE, 0);
+        }
+
+        // 横線を描画
+        for (int j = 0; j <= MAX_SQUARE; j++)
+        {
+            float y = -offset - j * CELL_SIZE;
+            GL.Vertex3(offset, y, 0);
+            GL.Vertex3(offset + MAX_SQUARE * CELL_SIZE, y, 0);
+        }
+
+        GL.End();
+    }
     // テキストを表示する処理
     private void DrawText()
+{
+    // ターンの描画
+    var player = "";
+    if (turn == BLACK)
     {
-        // ターンの描画
-        var player = "";
-        if (turn == BLACK)
-        {
-            player = "黒";
-        }
-        else
-        {
-            player = "白";
-        }
-        // ターンを表示
-        turnText.text = "ターン：" + player;
-
-        // スコアの描画
-        scoreText.text = "黒：" + scoreBk + "\n白：" + scoreWh;
+        player = "黒";
     }
+    else
+    {
+        player = "白";
+    }
+    // ターンを表示
+    turnText.text = "ターン：" + player;
+
+    // スコアの描画
+    scoreText.text = "黒：" + scoreBk + "\n白：" + scoreWh;
+
+}
 
     // 駒を描画する処理
     private void DrawPiece()
@@ -177,10 +250,8 @@ public class ReversiManager : MonoBehaviour
                 selectPosY = 0;
             }
         }
-
         //選択中のマス
         select.transform.position = new Vector2(selectPosX, -selectPosY);
-
     }
 
     // コマを配置する処理
@@ -201,7 +272,6 @@ public class ReversiManager : MonoBehaviour
                 else
                 {
                     board[selectPosX, selectPosY] = WHITE;
-
                 }
 
                 // コマを消去
@@ -282,6 +352,12 @@ public class ReversiManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetMouseButtonDown(0))
+        {
+            var mPos= Input.mousePosition;
+            Debug.Log("x:" + mPos.x + "    y:" + mPos.y);
+        }
+
         // 選択しているマス移動
         ChangeSelectPos();
 
