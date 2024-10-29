@@ -257,6 +257,7 @@ public class ReversiManager : MonoBehaviour
     // コマを配置する処理
     private void PlaceThePiece()
     {
+
         // スペースキー押下でコマを置く
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -290,7 +291,7 @@ public class ReversiManager : MonoBehaviour
     }
 
     /// <summary>
-    // 上方向にコマが置けるかどうかの判定処理
+    // 上下方向にコマが置けるかどうかの判定処理
     /// </summary>
     /// <param name="_posX">コマを置く位置のx成分</param>
     /// <param name="_posY">コマを置く位置のy成分</param>
@@ -301,7 +302,11 @@ public class ReversiManager : MonoBehaviour
         var myCol = turn;
         // 相手の色
         var enCol = turn * -1;
+        // コマを置けるかどうかのフラグ
+        var isPlaced = false;
 
+        
+        #region 上方向の探索
         // 上方向の探索
         // 検索範囲の除外
         // 石を置いたときに挟むことが出来ない上2マスの場所
@@ -322,24 +327,88 @@ public class ReversiManager : MonoBehaviour
                         // 自分と同じ色のコマを見つけた場合
                         if (board[_posX, i] == myCol)
                         {
+                            // コマを置けるため、フラグを立てる
+                            isPlaced = true;
+
                             // 位置を格納し、ループから抜ける
                             myColPos = i;
                             break;
                         }
                     }
 
-                    // 自分と同じ色のコマの最短の位置までコマをひっくり返す
-                    for (int i = _posY; i > myColPos; i--)
+                    // コマを置くことができれば、ひっくり返す
+                    if (isPlaced)
                     {
-                        board[_posX, i] = myCol;
+                        // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                        for (int i = _posY; i > myColPos; i--)
+                        {
+                            board[_posX, i] = myCol;
+                        }
                     }
-                    return true;
+                    
                 }
             }
         }
+        #endregion
+        
 
-        // 上の条件を満たさない場合はfalseを返す(コマを置けない)
-        return false;
+        #region 下方向の探索
+        // 下方向の探索
+        // 検索範囲の除外
+        // 石を置いたときに挟むことが出来ない下2マスの場所
+        if (_posY <= 5)
+        {
+            // 1.石を置こうとするマスに石が置かれていないこと
+            if (board[_posX, _posY] == NONE)
+            {
+                // 2.石を置こうとするマスの1マス隣(下)に自分と異なる色の石があること
+                if (board[_posX, _posY + 1] == enCol)
+                {
+                    // 2の延長線上に置かれている自分と同じ色のコマの最短の位置
+                    var myColPos = 0;
+
+                    // 3.2の延長線上に自分と同じ色の石が置かれていること
+                    for (int i = _posY; i < MAX_SQUARE; i++)
+                    {
+                        // 自分と同じ色のコマを見つけた場合
+                        if (board[_posX, i] == myCol)
+                        {
+                            // コマを置けるため、フラグを立てる
+                            isPlaced = true;
+
+                            // 位置を格納し、ループから抜ける
+                            myColPos = i;
+
+                            break;
+                        }
+                    }
+
+                    // コマを置くことができれば、ひっくり返す
+                    if (isPlaced)
+                    {
+                        // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                        for (int i = _posY; i < myColPos; i++)
+                        {
+                            board[_posX, i] = myCol;
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
+        // 条件を満たしている場合はtrueを返す(コマを置ける)
+        if (isPlaced)
+        {
+            return true;
+        }
+        else
+        {
+            // 上の条件を満たさない場合はfalseを返す(コマを置けない)
+            return false;
+        }
+
+        
     }
 
     // Start is called before the first frame update
