@@ -304,8 +304,9 @@ public class ReversiManager : MonoBehaviour
         var enCol = turn * -1;
         // コマを置けるかどうかのフラグ
         var isPlaced = false;
+        // 探索したい方向に置かれている自分と同じ色のコマの最短の位置
+        var myColPos = 0;
 
-        
         #region 上方向の探索
         // 上方向の探索
         // 検索範囲の除外
@@ -318,9 +319,6 @@ public class ReversiManager : MonoBehaviour
                 // 2.石を置こうとするマスの1マス隣(上)に自分と異なる色の石があること
                 if (board[_posX, _posY - 1] == enCol)
                 {
-                    // 2の延長線上に置かれている自分と同じ色のコマの最短の位置
-                    var myColPos = 0;
-
                     // 3.2の延長線上に自分と同じ色の石が置かれていること
                     for (int i = _posY; i > 0; i--)
                     {
@@ -351,7 +349,6 @@ public class ReversiManager : MonoBehaviour
         }
         #endregion
         
-
         #region 下方向の探索
         // 下方向の探索
         // 検索範囲の除外
@@ -364,9 +361,6 @@ public class ReversiManager : MonoBehaviour
                 // 2.石を置こうとするマスの1マス隣(下)に自分と異なる色の石があること
                 if (board[_posX, _posY + 1] == enCol)
                 {
-                    // 2の延長線上に置かれている自分と同じ色のコマの最短の位置
-                    var myColPos = 0;
-
                     // 3.2の延長線上に自分と同じ色の石が置かれていること
                     for (int i = _posY; i < MAX_SQUARE; i++)
                     {
