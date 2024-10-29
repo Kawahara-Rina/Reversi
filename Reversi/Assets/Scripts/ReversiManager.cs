@@ -391,18 +391,101 @@ public class ReversiManager : MonoBehaviour
         }
         #endregion
 
+        #region 左方向の探索
+        // 左方向の探索
+        // 検索範囲の除外
+        // 石を置いたときに挟むことが出来ない左2マスの場所
+        if (_posX >= 2)
+        {
+            // 1.石を置こうとするマスに石が置かれていないこと
+            if (board[_posX, _posY] == NONE)
+            {
+                // 2.石を置こうとするマスの1マス隣(左)に自分と異なる色の石があること
+                if (board[_posX - 1, _posY] == enCol)
+                {
+                    // 3.2の延長線上に自分と同じ色の石が置かれていること
+                    for (int i = _posX; i > 0; i--)
+                    {
+                        // 自分と同じ色のコマを見つけた場合
+                        if (board[i, _posY] == myCol)
+                        {
+                            // コマを置けるため、フラグを立てる
+                            isPlaced = true;
+
+                            // 位置を格納し、ループから抜ける
+                            myColPos = i;
+                            break;
+                        }
+                    }
+
+                    // コマを置くことができれば、ひっくり返す
+                    if (isPlaced)
+                    {
+                        // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                        for (int i = _posX; i > myColPos; i--)
+                        {
+                            board[i, _posY] = myCol;
+                        }
+                    }
+
+                }
+            }
+        }
+        #endregion
+
+        #region 右方向の探索
+        // 右方向の探索
+        // 検索範囲の除外
+        // 石を置いたときに挟むことが出来ない右2マスの場所
+        if (_posX <= 5)
+        {
+            // 1.石を置こうとするマスに石が置かれていないこと
+            if (board[_posX, _posY] == NONE)
+            {
+                // 2.石を置こうとするマスの1マス隣(右)に自分と異なる色の石があること
+                if (board[_posX + 1, _posY] == enCol)
+                {
+                    // 3.2の延長線上に自分と同じ色の石が置かれていること
+                    for (int i = _posX; i < MAX_SQUARE; i++)
+                    {
+                        // 自分と同じ色のコマを見つけた場合
+                        if (board[i, _posY] == myCol)
+                        {
+                            // コマを置けるため、フラグを立てる
+                            isPlaced = true;
+
+                            // 位置を格納し、ループから抜ける
+                            myColPos = i;
+
+                            break;
+                        }
+                    }
+
+                    // コマを置くことができれば、ひっくり返す
+                    if (isPlaced)
+                    {
+                        // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                        for (int i = _posX; i < myColPos; i++)
+                        {
+                            board[i, _posY] = myCol;
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
+
         // 条件を満たしている場合はtrueを返す(コマを置ける)
         if (isPlaced)
         {
             return true;
         }
+        // 上の条件を満たさない場合はfalseを返す(コマを置けない)
         else
         {
-            // 上の条件を満たさない場合はfalseを返す(コマを置けない)
             return false;
         }
 
-        
     }
 
     // Start is called before the first frame update
