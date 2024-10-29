@@ -307,6 +307,204 @@ public class ReversiManager : MonoBehaviour
         // 探索したい方向に置かれている自分と同じ色のコマの最短の位置
         var myColPos = 0;
 
+
+        #region 右斜め上方向の探索
+        // 右斜め上方向の探索
+        // 検索範囲の除外
+        // 石を置いたときに挟むことが出来ない上2マス・右2マスの場所
+        if (_posY >= 2 && _posX <= 5)
+        {
+            // 1.石を置こうとするマスに石が置かれていないこと
+            if (board[_posX, _posY] == NONE)
+            {
+                // 2.石を置こうとするマスの1マス右上に自分と異なる色の石があること
+                if (board[_posX + 1, _posY - 1] == enCol)
+                {
+                    // 3.2の延長線上に自分と同じ色の石が置かれていること
+                    // TODO　多方向ひっくり返せるようにする
+                    for (int i = 0; i < MAX_SQUARE; i++)
+                    {
+                        // 範囲外参照を防ぐ条件チェック 
+                        if (_posX + i >= MAX_SQUARE || _posY - i < 0)
+                        {
+                            break;
+                        }
+
+                        // 自分と同じ色のコマを見つけた場合
+                        if (board[_posX+i, _posY-i] == myCol)
+                        {
+                            // コマを置けるため、フラグを立てる
+                            isPlaced = true;
+
+                            // 位置を格納し、ループから抜ける
+                            myColPos = i;
+                            break;
+                        }
+                    }
+
+                    // コマを置くことができれば、ひっくり返す
+                    if (isPlaced)
+                    {
+                        // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                        for (int i = 0; i < myColPos; i++)
+                        {
+                            board[_posX+i, _posY-i] = myCol;
+                        }
+                    }
+
+                }
+            }
+        }
+        #endregion
+
+        #region 右斜め下方向の探索
+        // 右斜め下方向の探索
+        // 検索範囲の除外
+        // 石を置いたときに挟むことが出来ない下2マス・右2マスの場所
+        if (_posY <= 5 && _posX <= 5)
+        {
+            // 1.石を置こうとするマスに石が置かれていないこと
+            if (board[_posX, _posY] == NONE)
+            {
+                // 2.石を置こうとするマスの1マス右下に自分と異なる色の石があること
+                if (board[_posX + 1, _posY + 1] == enCol)
+                {
+                    // 3.2の延長線上に自分と同じ色の石が置かれていること
+                    // TODO　多方向ひっくり返せるようにする
+                    for (int i = 0; i < MAX_SQUARE; i++)
+                    {
+                        // 範囲外参照を防ぐ条件チェック 
+                        if (_posX + i >= MAX_SQUARE || _posY + i >= MAX_SQUARE)
+                        {
+                            break;
+                        }
+
+                        // 自分と同じ色のコマを見つけた場合
+                        if (board[_posX + i, _posY + i] == myCol)
+                        {
+                            // コマを置けるため、フラグを立てる
+                            isPlaced = true;
+
+                            // 位置を格納し、ループから抜ける
+                            myColPos = i;
+                            break;
+                        }
+                    }
+
+                    // コマを置くことができれば、ひっくり返す
+                    if (isPlaced)
+                    {
+                        // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                        for (int i = 0; i < myColPos; i++)
+                        {
+                            board[_posX + i, _posY + i] = myCol;
+                        }
+                    }
+
+                }
+            }
+        }
+        #endregion
+
+        #region 左斜め上方向の探索
+        // 左斜め上方向の探索
+        // 検索範囲の除外
+        // 石を置いたときに挟むことが出来ない上2マス・左2マスの場所
+        if (_posY >= 2 && _posX >= 2)
+        {
+            // 1.石を置こうとするマスに石が置かれていないこと
+            if (board[_posX, _posY] == NONE)
+            {
+                // 2.石を置こうとするマスの1マス左上に自分と異なる色の石があること
+                if (board[_posX - 1, _posY - 1] == enCol)
+                {
+                    // 3.2の延長線上に自分と同じ色の石が置かれていること
+                    // TODO　多方向ひっくり返せるようにする
+                    for (int i = 0; i < MAX_SQUARE; i++)
+                    {
+                        // 範囲外参照を防ぐ条件チェック 
+                        if (_posX - i < 0 || _posY - i < 0)
+                        {
+                            break;
+                        }
+
+                        // 自分と同じ色のコマを見つけた場合
+                        if (board[_posX - i, _posY - i] == myCol)
+                        {
+                            // コマを置けるため、フラグを立てる
+                            isPlaced = true;
+
+                            // 位置を格納し、ループから抜ける
+                            myColPos = i;
+                            break;
+                        }
+                    }
+
+                    // コマを置くことができれば、ひっくり返す
+                    if (isPlaced)
+                    {
+                        // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                        for (int i = 0; i < myColPos; i++)
+                        {
+                            board[_posX - i, _posY - i] = myCol;
+                        }
+                    }
+
+                }
+            }
+        }
+        #endregion
+
+        #region 左斜め下方向の探索
+        // 左斜め下方向の探索
+        // 検索範囲の除外
+        // 石を置いたときに挟むことが出来ない上2マス・左2マスの場所
+        if (_posY <= 5 && _posX >= 2)
+        {
+            // 1.石を置こうとするマスに石が置かれていないこと
+            if (board[_posX, _posY] == NONE)
+            {
+                // 2.石を置こうとするマスの1マス左上に自分と異なる色の石があること
+                if (board[_posX - 1, _posY + 1] == enCol)
+                {
+                    // 3.2の延長線上に自分と同じ色の石が置かれていること
+                    // TODO　多方向ひっくり返せるようにする
+                    for (int i = 0; i < MAX_SQUARE; i++)
+                    {
+                        // 範囲外参照を防ぐ条件チェック 
+                        if (_posX - i < 0 || _posY + i >= MAX_SQUARE)
+                        {
+                            break;
+                        }
+
+                        // 自分と同じ色のコマを見つけた場合
+                        if (board[_posX - i, _posY + i] == myCol)
+                        {
+                            // コマを置けるため、フラグを立てる
+                            isPlaced = true;
+
+                            // 位置を格納し、ループから抜ける
+                            myColPos = i;
+                            break;
+                        }
+                    }
+
+                    // コマを置くことができれば、ひっくり返す
+                    if (isPlaced)
+                    {
+                        // 自分と同じ色のコマの最短の位置までコマをひっくり返す
+                        for (int i = 0; i < myColPos; i++)
+                        {
+                            board[_posX - i, _posY + i] = myCol;
+                        }
+                    }
+
+                }
+            }
+        }
+        #endregion
+
+
         #region 上方向の探索
         // 上方向の探索
         // 検索範囲の除外
@@ -474,6 +672,8 @@ public class ReversiManager : MonoBehaviour
             }
         }
         #endregion
+
+        
 
         // 条件を満たしている場合はtrueを返す(コマを置ける)
         if (isPlaced)
