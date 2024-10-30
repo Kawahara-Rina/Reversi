@@ -225,24 +225,30 @@ public class ReversiManager : MonoBehaviour
             // タップされた座標を取得、ワールド座標に変換する
             mPos = Input.mousePosition;
             wPos = Camera.main.ScreenToWorldPoint(new Vector3(mPos.x, mPos.y, 10f));
-            
-            // タップ位置を基に、盤面のマスのサイズに補正する
-            int gridX = Mathf.FloorToInt(wPos.x / CELL_SIZE + 0.5f);
-            int gridY = Mathf.FloorToInt(wPos.y / CELL_SIZE + 0.5f);
 
-            // 補正した座標をワールド座標に格納
-            wPos.x = gridX * CELL_SIZE;
-            wPos.y = gridY * CELL_SIZE;
+            // タップされた場所が盤面内なら
+            if ((wPos.x >= -CELL_SIZE / 2 && wPos.x <= MAX_SQUARE - (CELL_SIZE / 2))&&
+                (wPos.y <=  CELL_SIZE / 2 && wPos.y >= -(MAX_SQUARE - (CELL_SIZE / 2)))
+                )
+            {
+                // タップ位置を基に、盤面のマスのサイズに補正する
+                int gridX = Mathf.FloorToInt(wPos.x / CELL_SIZE + (CELL_SIZE / 2));
+                int gridY = Mathf.FloorToInt(wPos.y / CELL_SIZE + (CELL_SIZE / 2));
 
-            // ワールド座標を選択中の座標に格納 
-            select.transform.position = wPos;
+                // 補正した座標をワールド座標に格納
+                wPos.x = gridX * CELL_SIZE;
+                wPos.y = gridY * CELL_SIZE;
 
-            // ワールド座標の絶対値を選択中の座標に格納
-            selectPosX = Mathf.Abs(Mathf.FloorToInt(wPos.x));
-            selectPosY = Mathf.Abs(Mathf.FloorToInt(wPos.y));
+                // ワールド座標を選択中の座標に格納 
+                select.transform.position = wPos;
 
-            // 選択したフラグを立てる
-            isSelect = true;
+                // ワールド座標の絶対値を選択中の座標に格納
+                selectPosX = Mathf.Abs(Mathf.FloorToInt(wPos.x));
+                selectPosY = Mathf.Abs(Mathf.FloorToInt(wPos.y));
+
+                // 選択したフラグを立てる
+                isSelect = true;
+            }
         }
 
         #region キーボード用移動操作
