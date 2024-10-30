@@ -57,6 +57,10 @@ public class ReversiManager : MonoBehaviour
         // コマを描画
         DrawPiece();
 
+        // 盤面描画
+        OnRenderObject();
+
+        // 各変数の初期化
         // 選択中のマスのポジション初期化
         selectPosX = 0;
         selectPosY = 0;
@@ -66,30 +70,21 @@ public class ReversiManager : MonoBehaviour
         // スコア初期化
         scoreBk = 2;
         scoreWh = 2;
-
-        // 背景描画
-
-        OnRenderObject();
-
-
     }
 
+    // オブジェクトをレンダリングする関数
+    // カメラがシーンをレンダリングした後に呼び出される
     private void OnRenderObject()
     {
-        if (lineMaterial == null)
-        {
-            Debug.LogWarning("Line Material is not assigned.");
-            return;
-        }
-
         // 描画の基準点を中央に調整
         float offset = -CELL_SIZE / 2;
 
+        // 盤面の描画(緑の四角形、枠線)
         //DrawGreenBackground(offset);
         DrawLines(offset);
     }
 
-    // 緑の四角形を描画するメソッド
+    // 緑の四角形を描画する処理
     private void DrawGreenBackground(float offset)
     {
         lineMaterial.SetPass(0);
@@ -104,17 +99,13 @@ public class ReversiManager : MonoBehaviour
         GL.End();
     }
 
-
     // 枠線を描画する処理
     private void DrawLines(float offset)
     {
-        
-
         // マテリアルのセット
         lineMaterial.SetPass(0);
         GL.Begin(GL.LINES);
         GL.Color(Color.black);
-
         
         // 縦線を描画
         for (int i = 0; i <= MAX_SQUARE; i++)
@@ -134,26 +125,27 @@ public class ReversiManager : MonoBehaviour
 
         GL.End();
     }
+
     // テキストを表示する処理
     private void DrawText()
-{
-    // ターンの描画
-    var player = "";
-    if (turn == BLACK)
     {
-        player = "黒";
-    }
-    else
-    {
-        player = "白";
-    }
-    // ターンを表示
-    turnText.text = "ターン：" + player;
+        // ターンの描画
+        var player = "";
+        if (turn == BLACK)
+        {
+            player = "黒";
+        }
+        else
+        {
+            player = "白";
+        }
+        // ターンを表示
+        turnText.text = "ターン：" + player;
 
-    // スコアの描画
-    scoreText.text = "黒：" + scoreBk + "\n白：" + scoreWh;
+        // スコアの描画
+        scoreText.text = "黒：" + scoreBk + "\n白：" + scoreWh;
 
-}
+    }
 
     // 駒を描画する処理
     private void DrawPiece()
@@ -291,12 +283,12 @@ public class ReversiManager : MonoBehaviour
     }
 
     /// <summary>
-    // 上下方向にコマが置けるかどうかの判定処理
+    // 選択した場所にコマが置けるかどうかの判定処理・ひっくり返す処理
     /// </summary>
     /// <param name="_posX">コマを置く位置のx成分</param>
     /// <param name="_posY">コマを置く位置のy成分</param>
     /// <returns></returns>
-    private bool SelectCheck(int _posX,int _posY)
+    private bool SelectCheck(int _posX, int _posY)
     {
         // 自分の色
         var myCol = turn;
@@ -305,9 +297,92 @@ public class ReversiManager : MonoBehaviour
         // コマを置けるかどうかのフラグ
         var isPlaced = false;
         // 探索したい方向に置かれている自分と同じ色のコマの最短の位置
-        var myColPos = 0;
+        //var myColPos = 0;
+
+        // ひっくり返すことができるコマの位置を格納するリスト
+        List<(int, int)> flipPos = new List<(int, int)>();
+
+        // 1.石を置こうとするマスに石が置かれていないこと
+        if (board[_posX, _posY] != NONE)
+        {
+            // この条件を満たしていない場合は探索処理終了
+            return false;
+        }
+
+        // 各方向ごとの探索処理を行うための関数
+        // _x:探索方向のx成分(左右)
+        // _t:探索方向のy成分(上下)
+        void SearchDirection(int _x, int _y)
+        {
+            // ひっくり返す事ができるコマの位置を格納する一時リスト
+            var temp = new List<(int, int)>();
+
+            // 探索する位置を格納
+            var x = _posX + _x;
+            var y = _posY + _y;
+
+            // 盤面内で探索を行う
+            while (x >= 0 && x < MAX_SQUARE && y >= 0 && y < MAX_SQUARE)
+            {
+                // 2.石を置こうとするマスの1マス隣に自分と異なる色の石があること
+                if (board[x, y] == enCol)
+                {
+                    // 一時リストに追加
+                    // この時、コマが挟まれているかどうかはわからないため、一時リストに追加しておく
+                    temp.Add((x, y));
+                }
+                // 3.2の延長線上に自分と同じ色の石が置かれていること
+                else if (board[x, y] == myCol)
+                {
+                    // 自分と同じ色のコマを見つけた場合、ひっくり返せることが確定するため
+                    // 一時リストに格納したコマの位置をひっくり返す事ができるリストに追加する
+                    flipPos.AddRange(temp);
+                    // コマを置くことができるため、フラグを立てる
+                    //isPlaced = true;
+
+                    break;
+                }
+                // 上の条件を満たさない場合はループを抜ける(コマを置けない)
+                else
+                {
+                    break;
+                }
+
+                // 次に探索する位置に変更
+                x += _x;
+                y += _y;
+            }
+        }
 
 
+        // 上下左右、斜め上下左右方向の探索
+        SearchDirection( 0, -1);   // 上
+        SearchDirection( 0,  1);   // 下
+        SearchDirection(-1,  0);   // 左
+        SearchDirection( 1,  0);   // 右
+        SearchDirection(-1, -1);   // 左斜め上
+        SearchDirection(-1,  1);   // 左斜め下
+        SearchDirection( 1, -1);   // 右斜め上
+        SearchDirection( 1,  1);   // 右斜め下
+
+        // コマを置ける場合は、リスト内の位置をもとに該当するコマをひっくり返す
+        if (flipPos.Count > 0)
+        {
+            foreach(var pos in flipPos)
+            {
+                board[pos.Item1, pos.Item2] = myCol;
+            }
+
+            // コマを置けるため、フラグを成立
+            isPlaced = true;
+        }
+
+        // コマを置けるかどうかのフラグを返す
+        // true:コマを置ける　　false:コマを置けない
+        return isPlaced;
+
+        #region 8方向探索の元の考え方(関数化前)
+        /*
         #region 右斜め上方向の探索
         // 右斜め上方向の探索
         // 検索範囲の除外
@@ -673,7 +748,6 @@ public class ReversiManager : MonoBehaviour
         }
         #endregion
 
-        
 
         // 条件を満たしている場合はtrueを返す(コマを置ける)
         if (isPlaced)
@@ -685,6 +759,8 @@ public class ReversiManager : MonoBehaviour
         {
             return false;
         }
+        */
+        #endregion
 
     }
 
@@ -698,6 +774,7 @@ public class ReversiManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // デバッグ
         if (Input.GetMouseButtonDown(0))
         {
             var mPos= Input.mousePosition;
