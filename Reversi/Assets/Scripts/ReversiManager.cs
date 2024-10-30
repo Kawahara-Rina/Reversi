@@ -35,9 +35,9 @@ public class ReversiManager : MonoBehaviour
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
-        { NONE, NONE, NONE, WHITE, BLACK, NONE, NONE, NONE },
-        { NONE, NONE, NONE, BLACK, WHITE, NONE,NONE , NONE },
-        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
+        { NONE, NONE, NONE, BLACK, BLACK, BLACK, NONE, NONE },
+        { NONE, NONE, NONE, BLACK, WHITE, BLACK,NONE , NONE },
+        { NONE, NONE, NONE, BLACK, BLACK, BLACK, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE }, 
     };
@@ -77,6 +77,7 @@ public class ReversiManager : MonoBehaviour
         // スコア初期化
         scoreBk = 2;
         scoreWh = 2;
+
     }
 
     // オブジェクトをレンダリングする関数
@@ -292,8 +293,7 @@ public class ReversiManager : MonoBehaviour
         if (isSelect)
         {
             // そのマスに置けるかどうかの判定
-            // 上方向の探索のみ
-            if (SelectCheck(selectPosX, selectPosY))
+            if (SelectCheck(selectPosX, selectPosY,true))
             {
                 // 選択中のマスにコマを置く
                 if (turn == BLACK)
@@ -322,13 +322,14 @@ public class ReversiManager : MonoBehaviour
         }
     }
 
-    /// <summary>
+    ///<summary>
     // 選択した場所にコマが置けるかどうかの判定処理・ひっくり返す処理
     /// </summary>
     /// <param name="_posX">コマを置く位置のx成分</param>
     /// <param name="_posY">コマを置く位置のy成分</param>
-    /// <returns></returns>
-    private bool SelectCheck(int _posX, int _posY)
+    /// <param name="_isFlip">コマをひっくり返すかどうかのフラグ</param>
+    /// <returns>true:コマを置ける　false:コマを置けない</returns>
+    private bool SelectCheck(int _posX, int _posY, bool _isFlip)
     {
         // 自分の色
         var myCol = turn;
@@ -352,6 +353,7 @@ public class ReversiManager : MonoBehaviour
         // 各方向ごとの探索処理を行うための関数
         // _x:探索方向のx成分(左右)
         // _t:探索方向のy成分(上下)
+        // _isFlip:コマをひっくり返すかどうかのフラグ
         void SearchDirection(int _x, int _y)
         {
             // ひっくり返す事ができるコマの位置を格納する一時リスト
@@ -395,23 +397,26 @@ public class ReversiManager : MonoBehaviour
         }
 
         // 上下左右、斜め上下左右方向の探索
-        if(_posY >= 2) SearchDirection( 0, -1);   // 上
-        if(_posY <= 5) SearchDirection( 0,  1);   // 下
-        if(_posX >= 2) SearchDirection(-1,  0);   // 左
-        if(_posX <= 5) SearchDirection( 1,  0);   // 右
-        if(_posX >= 2 && _posY >= 2) SearchDirection(-1, -1);   // 左斜め上
-        if(_posX >= 2 && _posY <= 5) SearchDirection(-1,  1);   // 左斜め下
-        if(_posX <= 5 && _posY >= 2) SearchDirection( 1, -1);   // 右斜め上
-        if(_posX <= 5 && _posY <= 5) SearchDirection( 1,  1);   // 右斜め下
+        if (_posY >= 2) SearchDirection(0, -1);   // 上
+        if (_posY <= 5) SearchDirection(0, 1);   // 下
+        if (_posX >= 2) SearchDirection(-1, 0);   // 左
+        if (_posX <= 5) SearchDirection(1, 0);   // 右
+        if (_posX >= 2 && _posY >= 2) SearchDirection(-1, -1);   // 左斜め上
+        if (_posX >= 2 && _posY <= 5) SearchDirection(-1, 1);   // 左斜め下
+        if (_posX <= 5 && _posY >= 2) SearchDirection(1, -1);   // 右斜め上
+        if (_posX <= 5 && _posY <= 5) SearchDirection(1, 1);   // 右斜め下
 
         // コマを置ける場合は、リスト内の位置をもとに該当するコマをひっくり返す
         if (flipPos.Count > 0)
         {
-            foreach(var pos in flipPos)
+            // コマをひっくり返すフラグがtrueの場合はひっくり返す
+            if (_isFlip)
             {
-                board[pos.Item1, pos.Item2] = myCol;
+                foreach (var pos in flipPos)
+                {
+                    board[pos.Item1, pos.Item2] = myCol;
+                }
             }
-
             // コマを置けるため、フラグを成立
             isPlaced = true;
         }
@@ -803,37 +808,15 @@ public class ReversiManager : MonoBehaviour
 
     }
 
-    // 盤面全体を見て、コマを置ける場所があるか判定する処理
-    private bool SkipCheck(int _x,int _y)
-    {
-        // TODO　コマを置ける場所があるかの判定
-        // 置ける場所があればtrueを返す
-
-        // 検索するマスにコマが置かれている場合は探索終了
-        if(board[_x,_y] != NONE)
-        {
-            //return false;
-        }
-
-        // 検索範囲の除外
-        
-        // デバッグ
-        if (board[_x,_y] == NONE)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-
-    }
-
     // ターン開始時にコマを置く場所があるかどうかを判定する処理
     private void TurnControl()
     {
         // ターンをスキップするかどうかのフラグ
         var isSkip = true;
+
+        // コマがすべて黒・白の場合に使用するフラグ
+        var isAllBlack=true;
+        var isAllWhite=true;
 
         // ターン開始時一度だけ判定
         if (turnStart)
@@ -843,29 +826,52 @@ public class ReversiManager : MonoBehaviour
             {
                 for (int j = 0; j < MAX_SQUARE; j++)
                 {
+                    if (board[i, j] == BLACK)
+                    {
+                        isAllWhite = false;
+                    }
+                    if (board[i, j] == WHITE)
+                    {
+                        isAllBlack = false;
+                    }
+
                     // 1マスずつ確認
-                    if (SkipCheck(i, j))
+                    if (SelectCheck(i, j,false))
                     {
                         // 置ける場所があればターン継続(ループから抜ける)
-                        //isSkip = false;
+                        isSkip = false;
+
+                        // 全て黒・白の判定のためコメントアウト中
                         //break;
                     }
+
                 }
 
                 // 置ける場所があればターン継続(ループから抜ける)
-                if (!isSkip)
-                {
-                    break;
-                }
+                //if (!isSkip)
+                //{
+                //    break;
+                //}
             }
 
+            // 判定するかどうかのフラグを初期化
             turnStart = false;
+
+            if (isAllBlack)
+            {
+                Debug.Log("全て黒　黒の勝利");
+            }
+            if (isAllWhite)
+            {
+                Debug.Log("全て白　白の勝利");
+            }
 
             // コマを置ける場所がなくスキップの場合
             if (isSkip)
             {
                 // スキップ時のテキストを表示
                 skipText.SetActive(true);
+                Debug.Log("スキップ");
                 // ターンを変更
                 turn *= -1;
 
@@ -886,7 +892,7 @@ public class ReversiManager : MonoBehaviour
     {
         // コマを置ける場所があるかを確認し、ターン制御
         TurnControl();
-        
+
         // 選択しているマス移動
         ChangeSelectPos();
 
