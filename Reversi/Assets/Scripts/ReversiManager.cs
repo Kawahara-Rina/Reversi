@@ -18,12 +18,14 @@ public class ReversiManager : MonoBehaviour
     //[SerializeField] private float radius; // コマの半径
 
     // デバッグ用
-    [SerializeField]private GameObject black;  // 表示するコマ「黒」
-    [SerializeField]private GameObject white;  // 表示するコマ「白」
-    [SerializeField]private GameObject parent; // コマを生成する領域
-    [SerializeField]private GameObject select; // 選択中のマス
-    [SerializeField] private Text turnText;    // ターンを表示するテキスト
-    [SerializeField] private Text scoreText;   // 各色のコマ数を表示するテキスト
+    [SerializeField] private GameObject black;    // 表示するコマ「黒」
+    [SerializeField] private GameObject white;    // 表示するコマ「白」
+    [SerializeField] private GameObject parent;   // コマを生成する領域
+    [SerializeField] private GameObject select;   // 選択中のマス
+    [SerializeField] private GameObject skipText; // スキップ時のテキスト
+
+    [SerializeField] private Text turnText;       // ターンを表示するテキスト
+    [SerializeField] private Text scoreText;      // 各色のコマ数を表示するテキスト
 
     // オセロの盤面を定義
     // オセロの盤面は8x8
@@ -194,7 +196,6 @@ public class ReversiManager : MonoBehaviour
                     piece.transform.SetParent(parent.transform, false);
 
                     piece.transform.position = new Vector2(i, -j);
-
 
                     //Debug.Log("["+i+","+j+"]   " +board[i, j]);
 
@@ -393,16 +394,15 @@ public class ReversiManager : MonoBehaviour
             }
         }
 
-
         // 上下左右、斜め上下左右方向の探索
-        SearchDirection( 0, -1);   // 上
-        SearchDirection( 0,  1);   // 下
-        SearchDirection(-1,  0);   // 左
-        SearchDirection( 1,  0);   // 右
-        SearchDirection(-1, -1);   // 左斜め上
-        SearchDirection(-1,  1);   // 左斜め下
-        SearchDirection( 1, -1);   // 右斜め上
-        SearchDirection( 1,  1);   // 右斜め下
+        if(_posY >= 2) SearchDirection( 0, -1);   // 上
+        if(_posY <= 5) SearchDirection( 0,  1);   // 下
+        if(_posX >= 2) SearchDirection(-1,  0);   // 左
+        if(_posX <= 5) SearchDirection( 1,  0);   // 右
+        if(_posX >= 2 && _posY >= 2) SearchDirection(-1, -1);   // 左斜め上
+        if(_posX >= 2 && _posY <= 5) SearchDirection(-1,  1);   // 左斜め下
+        if(_posX <= 5 && _posY >= 2) SearchDirection( 1, -1);   // 右斜め上
+        if(_posX <= 5 && _posY <= 5) SearchDirection( 1,  1);   // 右斜め下
 
         // コマを置ける場合は、リスト内の位置をもとに該当するコマをひっくり返す
         if (flipPos.Count > 0)
@@ -807,7 +807,26 @@ public class ReversiManager : MonoBehaviour
     private bool SkipCheck(int _x,int _y)
     {
         // TODO　コマを置ける場所があるかの判定
-        return true;
+        // 置ける場所があればtrueを返す
+
+        // 検索するマスにコマが置かれている場合は探索終了
+        if(board[_x,_y] != NONE)
+        {
+            //return false;
+        }
+
+        // 検索範囲の除外
+        
+        // デバッグ
+        if (board[_x,_y] == NONE)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+
     }
 
     // ターン開始時にコマを置く場所があるかどうかを判定する処理
@@ -828,8 +847,8 @@ public class ReversiManager : MonoBehaviour
                     if (SkipCheck(i, j))
                     {
                         // 置ける場所があればターン継続(ループから抜ける)
-                        isSkip = false;
-                        break;
+                        //isSkip = false;
+                        //break;
                     }
                 }
 
@@ -840,16 +859,18 @@ public class ReversiManager : MonoBehaviour
                 }
             }
 
+            turnStart = false;
+
             // コマを置ける場所がなくスキップの場合
             if (isSkip)
             {
-                Debug.Log("置ける場所がないのでスキップしました");
-
+                // スキップ時のテキストを表示
+                skipText.SetActive(true);
                 // ターンを変更
                 turn *= -1;
-            }
 
-            turnStart = false;
+                return;
+            }
         }
     }
 
