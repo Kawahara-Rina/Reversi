@@ -36,8 +36,7 @@ public class ReversiManager : MonoBehaviour
         { NONE, NONE, NONE, BLACK, WHITE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
-        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
-    };
+        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },};
 
     // カーソルの位置
     private int selectPosX,selectPosY;
@@ -882,17 +881,19 @@ public class ReversiManager : MonoBehaviour
             // コマを置ける場所がなくスキップの場合
             if (isSkip)
             {
-                // スキップ時のテキストを表示
-                skipText.SetActive(true);
-
-                // ターンを変更
-                turn *= -1;
-
                 // コマが全て黒・白の場合、全てのマスが埋まっている場合はゲーム終了
                 if(isAllBlack || isAllWhite || isAllPlaced)
                 {
                     isGameEnd = true;
+                    return;
                 }
+
+                // スキップ時のテキストを表示
+                var animator = skipText.GetComponent<Animator>();
+                animator.SetTrigger("Skip");
+
+                // ターンを変更
+                turn *= -1;
 
                 return;
             }
