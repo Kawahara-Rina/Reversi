@@ -147,6 +147,7 @@ public class ReversiManager : MonoBehaviour
     {
         // ターンの描画
         var player = "";
+
         if (turn == BLACK)
         {
             player = "黒";
@@ -155,6 +156,7 @@ public class ReversiManager : MonoBehaviour
         {
             player = "白";
         }
+
         // ターンを表示
         turnText.text = "ターン：" + player;
 
@@ -177,7 +179,7 @@ public class ReversiManager : MonoBehaviour
             {
                 GameObject obj = null;
 
-                // 色別に画像変える
+                // 色別に画像を変える
                 switch (board[i, j])
                 {
                     case NONE:
@@ -393,8 +395,6 @@ public class ReversiManager : MonoBehaviour
                     // 自分と同じ色のコマを見つけた場合、ひっくり返せることが確定するため
                     // 一時リストに格納したコマの位置をひっくり返す事ができるリストに追加する
                     flipPos.AddRange(temp);
-                    // コマを置くことができるため、フラグを立てる
-                    //isPlaced = true;
 
                     break;
                 }
@@ -411,14 +411,14 @@ public class ReversiManager : MonoBehaviour
         }
 
         // 上下左右、斜め上下左右方向の探索
-        if (_posY >= 2) SearchDirection(0, -1);   // 上
-        if (_posY <= 5) SearchDirection(0, 1);   // 下
-        if (_posX >= 2) SearchDirection(-1, 0);   // 左
-        if (_posX <= 5) SearchDirection(1, 0);   // 右
+        if (_posY >= 2) SearchDirection( 0, -1);   // 上
+        if (_posY <= 5) SearchDirection( 0,  1);   // 下
+        if (_posX >= 2) SearchDirection(-1,  0);   // 左
+        if (_posX <= 5) SearchDirection( 1,  0);   // 右
         if (_posX >= 2 && _posY >= 2) SearchDirection(-1, -1);   // 左斜め上
-        if (_posX >= 2 && _posY <= 5) SearchDirection(-1, 1);   // 左斜め下
-        if (_posX <= 5 && _posY >= 2) SearchDirection(1, -1);   // 右斜め上
-        if (_posX <= 5 && _posY <= 5) SearchDirection(1, 1);   // 右斜め下
+        if (_posX >= 2 && _posY <= 5) SearchDirection(-1,  1);   // 左斜め下
+        if (_posX <= 5 && _posY >= 2) SearchDirection( 1, -1);   // 右斜め上
+        if (_posX <= 5 && _posY <= 5) SearchDirection( 1,  1);   // 右斜め下
 
         // コマを置ける場合は、リスト内の位置をもとに該当するコマをひっくり返す
         if (flipPos.Count > 0)
@@ -884,7 +884,7 @@ public class ReversiManager : MonoBehaviour
             {
                 // スキップ時のテキストを表示
                 skipText.SetActive(true);
-                Debug.Log("スキップ");
+
                 // ターンを変更
                 turn *= -1;
 
