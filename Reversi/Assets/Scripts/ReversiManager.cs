@@ -34,22 +34,24 @@ public class ReversiManager : MonoBehaviour
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, WHITE, BLACK, NONE, NONE, NONE },
-        { NONE, NONE, NONE, BLACK, WHITE, NONE, NONE, NONE },
+        { NONE, NONE, NONE, BLACK, WHITE, NONE,NONE , NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
-        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
+        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE }, 
     };
-
-    // LineRenderer取得用
-    //LineRenderer renderer;
 
     // カーソルの位置
     private int selectPosX,selectPosY;
+    // 置く場所を選択したかどうかのフラグ
+    private bool isSelect;
 
     // 黒・白のターン
     private int turn;
     // 黒・白のコマ数
     private int scoreBk,scoreWh;
+
+    // ターン開始時フラグ
+    private bool turnStart;
 
     // 初期化処理
     private void Init()
@@ -64,9 +66,12 @@ public class ReversiManager : MonoBehaviour
         // 選択中のマスのポジション初期化
         selectPosX = 0;
         selectPosY = 0;
+        isSelect = false;
 
         // ターン初期化
         turn = BLACK;
+        turnStart = true;
+
         // スコア初期化
         scoreBk = 2;
         scoreWh = 2;
@@ -201,6 +206,37 @@ public class ReversiManager : MonoBehaviour
     // 選択中のマスの位置を変更する処理
     private void ChangeSelectPos()
     {
+        // マウス座標と、ワールド座標
+        Vector3 mPos,wPos;
+
+        // 画面タップ時
+        if (Input.GetMouseButtonDown(0))
+        {
+            // タップされた座標を取得、ワールド座標に変換する
+            mPos = Input.mousePosition;
+            wPos = Camera.main.ScreenToWorldPoint(new Vector3(mPos.x, mPos.y, 10f));
+            
+            // タップ位置を基に、盤面のマスのサイズに補正する
+            int gridX = Mathf.FloorToInt(wPos.x / CELL_SIZE + 0.5f);
+            int gridY = Mathf.FloorToInt(wPos.y / CELL_SIZE + 0.5f);
+
+            // 補正した座標をワールド座標に格納
+            wPos.x = gridX * CELL_SIZE;
+            wPos.y = gridY * CELL_SIZE;
+
+            // ワールド座標を選択中の座標に格納 
+            select.transform.position = wPos;
+
+            // ワールド座標の絶対値を選択中の座標に格納
+            selectPosX = Mathf.Abs(Mathf.FloorToInt(wPos.x));
+            selectPosY = Mathf.Abs(Mathf.FloorToInt(wPos.y));
+
+            // 選択したフラグを立てる
+            isSelect = true;
+        }
+
+        #region キーボード用移動操作
+        /*
         // 選択しているマス移動
         if (Input.GetKeyDown(KeyCode.A))
         {
@@ -243,15 +279,16 @@ public class ReversiManager : MonoBehaviour
             }
         }
         //選択中のマス
-        select.transform.position = new Vector2(selectPosX, -selectPosY);
+        select.transform.position = new Vector2(selectPosX,selectPosY);
+        */
+        #endregion
     }
 
     // コマを配置する処理
     private void PlaceThePiece()
     {
-
-        // スペースキー押下でコマを置く
-        if (Input.GetKeyDown(KeyCode.Space))
+        // マスが選択(タップ)された場合
+        if (isSelect)
         {
             // そのマスに置けるかどうかの判定
             // 上方向の探索のみ
@@ -276,8 +313,10 @@ public class ReversiManager : MonoBehaviour
                 // コマを再描画
                 DrawPiece();
 
-                // ターンを変更
+                // ターンを変更、フラグを初期化
                 turn *= -1;
+                turnStart = true;
+                isSelect = false;
             }
         }
     }
@@ -764,6 +803,56 @@ public class ReversiManager : MonoBehaviour
 
     }
 
+    // 盤面全体を見て、コマを置ける場所があるか判定する処理
+    private bool SkipCheck(int _x,int _y)
+    {
+        // TODO　コマを置ける場所があるかの判定
+        return true;
+    }
+
+    // ターン開始時にコマを置く場所があるかどうかを判定する処理
+    private void TurnControl()
+    {
+        // ターンをスキップするかどうかのフラグ
+        var isSkip = true;
+
+        // ターン開始時一度だけ判定
+        if (turnStart)
+        {
+            // 盤面全体を確認
+            for (int i = 0; i < MAX_SQUARE; i++)
+            {
+                for (int j = 0; j < MAX_SQUARE; j++)
+                {
+                    // 1マスずつ確認
+                    if (SkipCheck(i, j))
+                    {
+                        // 置ける場所があればターン継続(ループから抜ける)
+                        isSkip = false;
+                        break;
+                    }
+                }
+
+                // 置ける場所があればターン継続(ループから抜ける)
+                if (!isSkip)
+                {
+                    break;
+                }
+            }
+
+            // コマを置ける場所がなくスキップの場合
+            if (isSkip)
+            {
+                Debug.Log("置ける場所がないのでスキップしました");
+
+                // ターンを変更
+                turn *= -1;
+            }
+
+            turnStart = false;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -774,13 +863,9 @@ public class ReversiManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // デバッグ
-        if (Input.GetMouseButtonDown(0))
-        {
-            var mPos= Input.mousePosition;
-            Debug.Log("x:" + mPos.x + "    y:" + mPos.y);
-        }
-
+        // コマを置ける場所があるかを確認し、ターン制御
+        TurnControl();
+        
         // 選択しているマス移動
         ChangeSelectPos();
 
