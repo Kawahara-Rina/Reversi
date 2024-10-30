@@ -1,45 +1,42 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ReversiManager : MonoBehaviour
 {
     // 定数定義
-    private const int MAX_SQUARE = 8;          // 盤面のマス数
-    private const int NONE = 0;                // マスの状態　空 
-    private const int BLACK = 1;               // マスの状態　黒のコマ
-    private const int WHITE = -1;              // マスの状態　白のコマ
-    private const float CELL_SIZE = 1.0f;      // 1コマの大きさ
+    private const int MAX_SQUARE = 8;               // 盤面のマス数
+    private const int NONE  =  0;                   // マスの状態　空 
+    private const int BLACK =  1;                   // マスの状態　黒のコマ
+    private const int WHITE = -1;                   // マスの状態　白のコマ
+    private const float CELL_SIZE = 1.0f;           // 1コマの大きさ
 
-    public Material lineMaterial; // 線描画用のマテリアルをアタッチ
-
-    // 変数定義
-    //[SerializeField] private float radius; // コマの半径
-
-    // デバッグ用
-    [SerializeField] private GameObject black;    // 表示するコマ「黒」
-    [SerializeField] private GameObject white;    // 表示するコマ「白」
-    [SerializeField] private GameObject parent;   // コマを生成する領域
-    [SerializeField] private GameObject select;   // 選択中のマス
-    [SerializeField] private GameObject skipText; // スキップ時のテキスト
-
-    [SerializeField] private Text turnText;       // ターンを表示するテキスト
-    [SerializeField] private Text scoreText;      // 各色のコマ数を表示するテキスト
+    // 使用するオブジェクト、テキスト、マテリアル等
+    [SerializeField] private GameObject black;      // 表示するコマ「黒」
+    [SerializeField] private GameObject white;      // 表示するコマ「白」
+    [SerializeField] private GameObject parent;     // コマを生成する領域
+    [SerializeField] private GameObject select;     // 選択中のマス
+    [SerializeField] private GameObject resultPanel;// リザルト時のパネル
+    [SerializeField] private GameObject skipText;   // スキップ時のテキスト
+    [SerializeField] private Text turnText;         // ターンを表示するテキスト
+    [SerializeField] private Text scoreText;        // 各色のコマ数を表示するテキスト
+    [SerializeField] private Text resultText;       // リザルト時のテキスト
+    [SerializeField] private Material lineMaterial; // 線描画用のマテリアル
 
     // オセロの盤面を定義
     // オセロの盤面は8x8
-    //private int[,] board = new int[MAX_SQUARE,MAX_SQUARE];
     private int[,] board =
     {
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
-        { NONE, NONE, NONE, BLACK, BLACK, BLACK, NONE, NONE },
-        { NONE, NONE, NONE, BLACK, WHITE, BLACK,NONE , NONE },
-        { NONE, NONE, NONE, BLACK, BLACK, BLACK, NONE, NONE },
+        { NONE, NONE, NONE, WHITE, WHITE, WHITE, NONE, NONE },
+        { NONE, NONE, NONE, WHITE, BLACK, WHITE,NONE , NONE },
+        { NONE, NONE, NONE, WHITE, WHITE, WHITE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
-        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE }, 
+        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
     };
 
     // カーソルの位置
@@ -54,6 +51,15 @@ public class ReversiManager : MonoBehaviour
 
     // ターン開始時フラグ
     private bool turnStart;
+    // ゲームエンドフラグ
+    private bool isGameEnd;
+
+    // リトライボタン押下時の処理
+    public void TapRetryButton()
+    {
+        // ゲームシーンを呼び出す
+        SceneManager.LoadScene("SampleScene");
+    }
 
     // 初期化処理
     private void Init()
@@ -78,6 +84,8 @@ public class ReversiManager : MonoBehaviour
         scoreBk = 2;
         scoreWh = 2;
 
+        // ゲームエンドフラグ初期化
+        isGameEnd = false;
     }
 
     // オブジェクトをレンダリングする関数
@@ -817,6 +825,8 @@ public class ReversiManager : MonoBehaviour
         // コマがすべて黒・白の場合に使用するフラグ
         var isAllBlack=true;
         var isAllWhite=true;
+        // マスが全て埋まっている場合に使用するフラグ
+        var isAllPlaced = true;
 
         // ターン開始時一度だけ判定
         if (turnStart)
@@ -826,13 +836,19 @@ public class ReversiManager : MonoBehaviour
             {
                 for (int j = 0; j < MAX_SQUARE; j++)
                 {
+                    // コマが全て黒・白かどうか判定
                     if (board[i, j] == BLACK)
                     {
                         isAllWhite = false;
                     }
-                    if (board[i, j] == WHITE)
+                    else if (board[i, j] == WHITE)
                     {
                         isAllBlack = false;
+                    }
+                    // マスがすべて埋まっているか判定
+                    else
+                    {
+                        isAllPlaced = false;
                     }
 
                     // 1マスずつ確認
@@ -857,15 +873,6 @@ public class ReversiManager : MonoBehaviour
             // 判定するかどうかのフラグを初期化
             turnStart = false;
 
-            if (isAllBlack)
-            {
-                Debug.Log("全て黒　黒の勝利");
-            }
-            if (isAllWhite)
-            {
-                Debug.Log("全て白　白の勝利");
-            }
-
             // コマを置ける場所がなくスキップの場合
             if (isSkip)
             {
@@ -875,8 +882,46 @@ public class ReversiManager : MonoBehaviour
                 // ターンを変更
                 turn *= -1;
 
+                // コマが全て黒・白の場合、全てのマスが埋まっている場合はゲーム終了
+                if(isAllBlack || isAllWhite || isAllPlaced)
+                {
+                    isGameEnd = true;
+                }
+
                 return;
             }
+        }
+    }
+
+    // ゲーム終了時の処理
+    private void GameEnd()
+    {
+        if (isGameEnd)
+        {
+            // リザルトパネル表示
+            resultPanel.SetActive(true);
+
+            var resText = "";
+
+            // 勝利プレイヤーの表示
+            // 黒のコマが多い場合
+            if(scoreBk > scoreWh)
+            {
+                resText = "黒の勝利";
+            }
+            // 白のコマが多い場合
+            else if(scoreWh > scoreBk)
+            {
+                resText = "白の勝利";
+            }
+            // 同点の場合
+            else
+            {
+                resText = "引き分け";
+            }
+
+            // リザルトの表示
+            resultText.text = resText;
         }
     }
 
@@ -901,5 +946,8 @@ public class ReversiManager : MonoBehaviour
 
         // テキストを表示
         DrawText();
+
+        // ゲーム終了時の処理
+        GameEnd();
     }
 }
