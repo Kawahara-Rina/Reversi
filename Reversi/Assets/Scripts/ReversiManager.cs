@@ -32,9 +32,9 @@ public class ReversiManager : MonoBehaviour
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
-        { NONE, NONE, NONE, WHITE, WHITE, WHITE, NONE, NONE },
-        { NONE, NONE, NONE, WHITE, BLACK, WHITE,NONE , NONE },
-        { NONE, NONE, NONE, WHITE, WHITE, WHITE, NONE, NONE },
+        { NONE, NONE, NONE, WHITE, BLACK, NONE, NONE, NONE },
+        { NONE, NONE, NONE, BLACK, WHITE, NONE, NONE, NONE },
+        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
     };
