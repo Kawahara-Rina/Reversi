@@ -58,7 +58,7 @@ public class ReversiManager : MonoBehaviour
     public void TapRetryButton()
     {
         // ゲームシーンを呼び出す
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene("GameScene");
     }
 
     // 初期化処理
