@@ -8,6 +8,7 @@ public class ReversiManager : MonoBehaviour
 {
     // 定数定義
     private const int MAX_SQUARE = 8;               // 盤面のマス数
+    private const int SKIP_CONTINUOS = 1;           // スキップカウント用　二回連続でスキップ
     private const int NONE  =  0;                   // マスの状態　空 
     private const int BLACK =  1;                   // マスの状態　黒のコマ
     private const int WHITE = -1;                   // マスの状態　白のコマ
@@ -27,6 +28,7 @@ public class ReversiManager : MonoBehaviour
 
     // オセロの盤面を定義
     // オセロの盤面は8x8
+    
     private int[,] board =
     {
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
@@ -36,7 +38,8 @@ public class ReversiManager : MonoBehaviour
         { NONE, NONE, NONE, BLACK, WHITE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
         { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
-        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },};
+        { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE },
+    };
 
     // カーソルの位置
     private int selectPosX,selectPosY;
@@ -52,6 +55,9 @@ public class ReversiManager : MonoBehaviour
     private bool turnStart;
     // ゲームエンドフラグ
     private bool isGameEnd;
+
+    // スキップ時のカウント
+    private int skipCnt;
 
     // リトライボタン押下時の処理
     public void TapRetryButton()
@@ -85,6 +91,9 @@ public class ReversiManager : MonoBehaviour
 
         // ゲームエンドフラグ初期化
         isGameEnd = false;
+
+        // スキップカウント初期化
+        skipCnt=0;
     }
 
     // オブジェクトをレンダリングする関数
@@ -861,6 +870,7 @@ public class ReversiManager : MonoBehaviour
                     {
                         // 置ける場所があればターン継続(ループから抜ける)
                         isSkip = false;
+                        skipCnt = 0;
 
                         // 全て黒・白の判定のためコメントアウト中
                         //break;
@@ -881,8 +891,13 @@ public class ReversiManager : MonoBehaviour
             // コマを置ける場所がなくスキップの場合
             if (isSkip)
             {
-                // コマが全て黒・白の場合、全てのマスが埋まっている場合はゲーム終了
-                if(isAllBlack || isAllWhite || isAllPlaced)
+                // スキップ時のカウントを加算
+                skipCnt++;
+
+                // コマが全て黒・白の場合、全てのマスが埋まっている場合、
+                // 2回連続でスキップされた場合はゲーム終了
+                if (isAllBlack || isAllWhite || isAllPlaced
+                    || skipCnt >= 1)
                 {
                     isGameEnd = true;
                     return;
