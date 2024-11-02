@@ -842,9 +842,12 @@ public class ReversiManager : MonoBehaviour
         // マスが全て埋まっている場合に使用するフラグ
         var isAllPlaced = true;
 
+
         // ターン開始時一度だけ判定
         if (turnStart)
         {
+
+
             // 盤面全体を確認
             for (int i = 0; i < MAX_SQUARE; i++)
             {
@@ -864,6 +867,8 @@ public class ReversiManager : MonoBehaviour
                     {
                         isAllPlaced = false;
                     }
+
+
 
                     // 1マスずつ確認
                     if (SelectCheck(i, j,false))
@@ -888,12 +893,10 @@ public class ReversiManager : MonoBehaviour
             // 判定するかどうかのフラグを初期化
             turnStart = false;
 
+
             // コマを置ける場所がなくスキップの場合
             if (isSkip)
             {
-                // スキップ時のカウントを加算
-                skipCnt++;
-
                 // コマが全て黒・白の場合、全てのマスが埋まっている場合、
                 // 2回連続でスキップされた場合はゲーム終了
                 if (isAllBlack || isAllWhite || isAllPlaced
@@ -909,6 +912,10 @@ public class ReversiManager : MonoBehaviour
 
                 // ターンを変更
                 turn *= -1;
+                turnStart = true;
+
+                // スキップ時のカウントを加算
+                skipCnt++;
 
                 return;
             }
